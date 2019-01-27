@@ -2,11 +2,6 @@ import gym
 import numpy as np
 from DQN import DQNAgent
 
-done = False
-tamanho_amostra = 32
-
-
-
 '''
 • ENTRADAS AMBIENTE
 	             	Min	    Max
