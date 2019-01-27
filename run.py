@@ -40,8 +40,7 @@ for tentativa in range(100):
         movimento = agente_neural.faz_algo(entradas_ambiente)
         proximas_entradas_ambiente, recompensa, done, info = jogo.step(movimento)
 
-
-        reward = reward + reward if not done else -10
+        recompensa_acumulado = recompensa + recompensa_acumulado
         print(reward)
         next_state = np.reshape(next_state, [1, state_size])
         agent.remember(state, action, reward, next_state, done)
