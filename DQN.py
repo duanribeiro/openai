@@ -9,7 +9,7 @@ class DQNAgent:
     def __init__(self, qtde_entradas_ambiente, qtde_entradas_agente):
         self.qtde_entradas_ambiente = qtde_entradas_ambiente
         self.qtde_entradas_agente = qtde_entradas_agente
-        self.memory = deque(maxlen=2000)
+        self.memoria = deque(maxlen=2000) # list-like container with fast appends and pops on either end
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
 
@@ -36,8 +36,8 @@ class DQNAgent:
 
         return modelo_neural
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def guardar_memoria(self, entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou):
+        self.memoria.append((entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou))
 
     def faz_algo(self, entradas_ambiente):
         # Coloca uma aleatoridade em 'testar" novos movimentos
@@ -48,21 +48,20 @@ class DQNAgent:
         act_values = self.modelo_neural.predict(entradas_ambiente)
         return np.argmax(act_values[0])
 
-    def replay(self, batch_size):
-        minibatch = random.sample(self.memory, batch_size)
-        for state, action, reward, next_state, done in minibatch:
-            target = reward
-            if not done:
-                target = (reward + self.gamma *
-                          np.amax(self.model.predict(next_state)[0]))
-            target_f = self.model.predict(state)
-            target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-
-    def load(self, name):
-        self.model.load_weights(name)
-
-    def save(self, name):
-        self.model.save_weights(name)
+    # def replay(self, tamanho_amostra):
+    #     amostra = random.sample(self.memoria, tamanho_amostra)
+    #     for entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou in amostra:
+    #         target = recompensa_acumulada
+    #         if not done:
+    #             target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
+    #         target_f = self.model.predict(state)
+    #         target_f[0][action] = target
+    #         self.model.fit(state, target_f, epochs=1, verbose=0)
+    #     if self.epsilon > self.epsilon_min:
+    #         self.epsilon *= self.epsilon_decay
+    #
+    # def load(self, name):
+    #     self.model.load_weights(name)
+    #
+    # def save(self, name):
+    #     self.model.save_weights(name)

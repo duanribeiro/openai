@@ -3,7 +3,8 @@ import numpy as np
 from DQN import DQNAgent
 
 done = False
-batch_size = 32
+tamanho_amostra = 32
+
 
 
 '''
@@ -33,23 +34,21 @@ qtde_entrada_agente = jogo.action_space.n
 agente_neural = DQNAgent(qtde_entradas_ambiente, qtde_entrada_agente)
 
 for tentativa in range(100):
-    entradas_ambiente = jogo.reset()
-    entradas_ambiente = np.reshape(entradas_ambiente, [1, qtde_entradas_ambiente])
+    recompensa_acumulada = 0
+    entradas_ambiente = jogo.reset().reshape(1, qtde_entradas_ambiente)
     for frame in range(500):
         jogo.render()
         movimento = agente_neural.faz_algo(entradas_ambiente)
-        proximas_entradas_ambiente, recompensa, done, info = jogo.step(movimento)
+        proximas_entradas_ambiente, recompensa, jogo_acabou, info = jogo.step(movimento)
+        proximas_entradas_ambiente = proximas_entradas_ambiente.reshape(1, qtde_entradas_ambiente)
+        recompensa_acumulada = recompensa + recompensa_acumulada
 
-        recompensa_acumulado = recompensa + recompensa_acumulado
-        print(reward)
-        next_state = np.reshape(next_state, [1, state_size])
-        agent.remember(state, action, reward, next_state, done)
-        state = next_state
-        if done:
-            print("episode: {}/{}, score: {}, e: {:.2}"
-                  .format(tentativa, EPISODES, frame, agent.epsilon))
-            break
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)
+        agente_neural.guardar_memoria(entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou)
+        entradas_ambiente = proximas_entradas_ambiente
+
+        print("tentativa: {}, frame: {}, score: {}, tx exploração: {:.2}".format(tentativa, frame, recompensa_acumulada, agente_neural.epsilon))
+
+        # if len(agente_neural.memoria) > tamanho_amostra:
+        #     agente_neural.replay(tamanho_amostra)
     # if e % 10 == 0:
     #     agent.save("./save/cartpole-dqn.h5")
