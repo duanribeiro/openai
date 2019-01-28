@@ -31,8 +31,8 @@ class DQNAgent:
         modelo_neural.add(Dense(24, activation='relu'))
         modelo_neural.add(Dense(self.qtde_entradas_agente, activation='linear'))
 
-        optmizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False) # https://keras.io/optimizers/
-        modelo_neural.compile(loss='mse', optimizer=optmizer)
+        funcao_otimizadora = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False) # https://keras.io/optimizers/
+        modelo_neural.compile(loss='mse', optimizer=funcao_otimizadora)
 
         return modelo_neural
 
@@ -42,23 +42,28 @@ class DQNAgent:
     def faz_algo(self, entradas_ambiente):
         # Coloca uma aleatoridade em 'testar" novos movimentos
         if np.random.rand() <= self.epsilon:
-            return random.randrange(self.qtde_entradas_agente)
+            movimento_aleatorio = random.randrange(self.qtde_entradas_agente)
+            return movimento_aleatorio
 
         # Escolhe o melhor movimento baseado na recompensa
-        act_values = self.modelo_neural.predict(entradas_ambiente)
-        return np.argmax(act_values[0])
+        movimento_pensado = self.modelo_neural.predict(entradas_ambiente)[0]
+        movimento_pensado = np.argmax(movimento_pensado)
+        return movimento_pensado
 
-    # def replay(self, tamanho_amostra):
-    #     amostra = random.sample(self.memoria, tamanho_amostra)
-    #     for entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou in amostra:
-    #         target = recompensa_acumulada
-    #         if not done:
-    #             target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
-    #         target_f = self.model.predict(state)
-    #         target_f[0][action] = target
-    #         self.model.fit(state, target_f, epochs=1, verbose=0)
-    #     if self.epsilon > self.epsilon_min:
-    #         self.epsilon *= self.epsilon_decay
+    def replay(self, tamanho_amostra):
+        amostra = random.sample(self.memoria, tamanho_amostra)
+        for entradas_ambiente, movimento, recompensa_acumulada, proximas_entradas_ambiente, jogo_acabou in amostra:
+            if jogo_acabou:
+                objetivo = recompensa_acumulada
+            else:
+                objetivo = recompensa_acumulada + self.gamma * np.amax(self.modelo_neural.predict(proximas_entradas_ambiente)[0])
+
+            objetivo_futuro = self.modelo_neural.predict(entradas_ambiente)
+            objetivo_futuro[0][movimento] = objetivo
+
+            self.modelo_neural.fit(entradas_ambiente, objetivo_futuro, epochs=1, verbose=0)
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
     #
     # def load(self, name):
     #     self.model.load_weights(name)
