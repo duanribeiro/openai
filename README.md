@@ -4,8 +4,8 @@ This project use deep learning to achieve goals in games.
 '''
 • ENTRADAS AMBIENTE
 	             	Min	    Max
-0	posicao 	            -1.2	    0.6
-1	velocidade	            -0.07    	0.07
+0	posicao        -1.2	    0.6
+1	velocidade     -0.07        0.07
 
 • ENTRADA AGENTE
 0	aperta esquerda
